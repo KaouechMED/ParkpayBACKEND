@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>login</title>
+</head>
+<body>
+    <h1>login</h1>
+    <form method="post">
+        {{form.hidden_tag()}}
+        <label for="username">username:</label>
+        <input type="text" id="username" name="username" required><br><br>
+        <label for="password">password:</label>
+        <input type="password" id="password" name="password" required><br><br>
+        <input type="submit" value="Sign in">
+    </form>
+
+    <h4>do not have an account </h4>
+    <a href="{{url_for('register_page')}}">Register</a>
+</body>
+</html>
