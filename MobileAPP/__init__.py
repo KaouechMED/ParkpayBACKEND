@@ -7,7 +7,7 @@ from flask_cors import CORS
 
 app=Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:@localhost/mobileapp' 
+app.config['SQLALCHEMY_DATABASE_URI']='mysql://emna:134200@localhost/parkpay' 
 app.config['SECRET_KEY'] = 'ec9439cfc6c796ae2029594d'
 db=SQLAlchemy(app)
 bcrypt=Bcrypt(app)

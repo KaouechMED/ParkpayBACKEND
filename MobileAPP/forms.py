@@ -50,3 +50,11 @@ class CarForm(FlaskForm):
     left_number = SearchField(label='Left Number:', validators=[Length(max=3),DataRequired(), Regexp(r'^\d+$')])
     right_number = SearchField(label='Right Number:', validators=[Length(max=4),DataRequired(), Regexp(r'^\d+$')])
     submit = SubmitField(label='Create Car')
+
+class TicketForm(FlaskForm):
+    class Meta:
+        csrf=False
+    position=SearchField(label="position:",validators=[DataRequired()])
+    duration=SearchField(label="duration:",validators=[DataRequired()])
+    car_number=SearchField(label="ChooseCar",validators=[DataRequired()])
+

@@ -1,14 +1,15 @@
 from MobileAPP import app
-from flask import request,Response,session
-from MobileAPP.models import User,Car
-from MobileAPP.forms import RegisterForm, LoginForm ,CarForm
+from flask import request,Response,session,jsonify
+from MobileAPP.models import User,Car,Ticket
+from MobileAPP.forms import RegisterForm, LoginForm ,CarForm,TicketForm
 from MobileAPP import db
 from flask_login import login_user,current_user,login_required
 import json
 from twilio.rest import Client
+from datetime import datetime,timedelta
 
 #otp api twilio
-with open('.\OTP\keys.json', 'r') as file:
+with open('/home/emna/ParkpayBACKEND/OTP/keys.json', 'r') as file:
     keys = json.load(file)
 client = Client(keys['account_sid'], keys['auth_token'])
 
@@ -101,3 +102,53 @@ def get_cars_page():
     cars = Car.query.all()
     car_list = [{'car_id': car.car_id, 'left_number': car.left_number, 'right_number': car.right_number,'combined_number':car.combined_number} for car in cars]
     return json.dumps({'cars': car_list})
+
+@app.route('/api/payticket',methods=['POST'])
+@login_required
+def payTicket():
+    data=request.get_json()
+    form=TicketForm(data=data)
+    if form.validate_on_submit():
+        car=Car.query.filter_by(combined_number = form.car_number.data).first()
+        if car:
+             now = datetime.now()
+             start_datetime = now.strftime("%Y-%m-%d %H:%M:%S")
+             duration=int(form.duration.data)
+             finish_datetime=(now + timedelta(hours=duration)).strftime("%Y-%m-%d %H:%M:%S")
+            
+             ticket=Ticket(
+                 position=form.position.data,
+                 start_datetime=start_datetime,
+                 finish_datetime=finish_datetime,
+                 user_id=current_user.id,
+                 car_id=car.id
+                 
+             )
+
+             db.session.add(ticket)
+             db.session.commit()
+
+             response_data = {
+                "message": "Ticket added successfully",
+                "start_datetime":start_datetime,
+                "finish_datetime": finish_datetime
+            }
+             status_code = 201
+        else:
+            # Car not found
+            response_data = {"error": "Car not found"}
+            status_code = 404
+
+    else:
+            # Form validation failed
+            errors = [error for error in form.errors.items()]
+            response_data = {"errors": errors}
+            status_code = 400
+
+    # Return the response data
+    return jsonify(response_data), status_code
+
+
+      
+    
+

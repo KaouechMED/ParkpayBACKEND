@@ -25,10 +25,19 @@ class User(db.Model,UserMixin):
         return bcrypt.check_password_hash(self.password_hash,attempted_password)
     
 class Car(db.Model):
-    car_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     left_number=db.Column(db.String(length=3), nullable=False)
     right_number=db.Column(db.String(length=4), nullable=False)
     combined_number = db.Column(db.String(length=7),default=left_number + right_number,unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class Ticket(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    position=db.Column(db.String(length=20),nullable=False)
+    start_datetime=db.Column(db.String(length=20),nullable=False)
+    finish_datetime=db.Column(db.String(length=20),nullable=False)
+    user_id=db.Column(db.Integer,db.ForeignKey('user.id'),nullable=False)
+    car_id=db.Column(db.Integer,db.ForeignKey('car.id'),nullable=False)
+
     
    
