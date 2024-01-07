@@ -35,54 +35,28 @@ def register_page():
     
 # Login API endpoint
 @app.route('/api/login', methods=['POST'])
-def iniate_login():
+def login_page():
     data = request.get_json()
     form = LoginForm(data=data)
     if form.validate_on_submit():
         attempted_user = User.query.filter_by(username=form.username.data).first()
-        if attempted_user and attempted_user.check_password_correction(attempted_password=form.password.data):
-            #otp send
-            verification = client.verify.v2.services(keys['verify_sid']) \
-                .verifications \
-                .create(to="+216"+attempted_user.phone_number, channel="sms")
-            session['user_id'] = attempted_user.id
-            session['verification_sid'] = verification.sid
-            response_data = {"message": "OTP sent for verification"}
-            status_code = 201
+       
+        if attempted_user and attempted_user.check_password_correction(attempted_password=form.password.data) :
+            login_user(attempted_user)
+            session['user_id'] = attempted_user.id  
+            response_data={"message": "User logged in successfully"}
+            status_code=201
         else:
             response_data={'error': 'Invalid username or password'}
             status_code=401
-    else:
+    if form.errors !={}:
         errors = [error for error in form.errors.items()]
         response_data={'errors': errors}
         status_code=401
     json_response = json.dumps(response_data)
     return Response(response=json_response,status=status_code,content_type='application/json')
 
-@app.route('/api/submit_otp', methods=['POST'])
-def submit_otp():
-    data = request.get_json()
-    otp_code = data.get('otp_code')
-    user_id = session.get('user_id')
-    verification_sid = session.get('verification_sid')
 
-    if not otp_code or not user_id or not verification_sid:
-        json_response=json.dumps({'error': 'Invalid OTP submission'})
-        status_code=401
-    attempted_user = User.query.get(user_id)
-    verification_check = client.verify.v2.services(keys['verify_sid']) \
-        .verification_checks \
-        .create(code=otp_code, verification_sid=verification_sid)
-
-    if verification_check.status == "approved":
-        login_user(attempted_user)
-        session.pop('verification_sid', None)
-        json_response=json.dumps({"message": "User logged in successfully"})
-        status_code=201
-    else:
-        json_response=json.dumps({'error': 'Invalid OTP'})
-        status_code=401
-    return Response(response=json_response,status=status_code,content_type='application/json')
 
 # Logout API endpoint
 @login_required
